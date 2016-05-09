@@ -36,7 +36,5 @@ This code is written by Google and is available at: https://github.com/tensorflo
 from load_datasets import load_mnist
 mnist = load_mnist.read_data_sets(target_dir="data")
 
-mnist_train = mnist.train
-mnist_val = mnist.validation
-mnist_test = mnist.test
+train, val, test = mnist.train, mnist.validation, mnist.test
 ```
