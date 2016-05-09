@@ -7,8 +7,8 @@ as a list of words. "Cleaned" data uses only the 26 lowercase English
 characters.
 
 Data comes in two flavors:
-text9: first 10^9 bytes of 2006 English Wikipedia dump (124 million words)
-text8: first 10^8 bytes of the same dump (17 million words)
+- text9: first 10^9 bytes of 2006 English Wikipedia dump (124 million words)
+- text8: first 10^8 bytes of the same dump (17 million words)
 
 This code was adapted from step 1 of Google's word2vec tutorial available at:
 https://github.com/tensorflow/tensorflow/blob/r0.8/tensorflow/examples/tutorials/word2vec/word2vec_basic.py
