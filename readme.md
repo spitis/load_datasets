@@ -10,7 +10,7 @@ Data comes in two flavors:
 text9: first 10^9 bytes of 2006 English Wikipedia dump (124 million words)
 text8: first 10^8 bytes of the same dump (17 million words)
 
-Part of this code is based on step 1 of Google's word2vec tutorial available at:
+This code was adapted from step 1 of Google's word2vec tutorial available at:
 https://github.com/tensorflow/tensorflow/blob/r0.8/tensorflow/examples/tutorials/word2vec/word2vec_basic.py
 
 ```python
@@ -29,6 +29,8 @@ properties/methods:
 - num_examples
 - epochs_completed
 - next_batch(batch_size, fake_data=False)
+
+This code is written by Google and is available at: https://github.com/tensorflow/tensorflow/blob/r0.7/tensorflow/examples/tutorials/mnist/input_data.py
 
 ```python
 from load_datasets import load_mnist
