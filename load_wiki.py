@@ -14,6 +14,8 @@ https://github.com/tensorflow/tensorflow/blob/r0.8/tensorflow/examples/tutorials
 import os
 import zipfile
 import subprocess
+import collections
+import numpy as np
 from urllib.request import urlretrieve
 
 def maybe_download(rooturl, filename, expected_bytes):
@@ -62,7 +64,7 @@ def clean_text9():
     os.remove('wikifil.pl')
 
 # Read the text8 into a list of strings.
-def load_text8(target_dir = None):
+def _load_text8(target_dir = None):
     if target_dir:
         old_dir = os.getcwd()
         if not os.path.exists(target_dir):
@@ -73,7 +75,7 @@ def load_text8(target_dir = None):
 
     """Extract the first file enclosed in a zip file as a list of words"""
     with zipfile.ZipFile(filename) as f:
-        data = f.read(f.namelist()[0]).split()
+        data = f.read(f.namelist()[0]).decode("utf-8").split()
 
     if target_dir:
         os.chdir(old_dir)
@@ -81,7 +83,7 @@ def load_text8(target_dir = None):
     return data
 
 # Read the text9 into a list of strings.
-def load_text9(target_dir = None):
+def _load_text9(target_dir = None):
     if target_dir:
         old_dir = os.getcwd()
         if not os.path.exists(target_dir):
@@ -102,3 +104,70 @@ def load_text9(target_dir = None):
         os.chdir(old_dir)
 
     return data
+
+def load_text8(target_dir = None, vocab_size = 20000):
+    text8 = _load_text8(target_dir=target_dir)
+    return DataSet(text8, vocab_size)
+
+def load_text9(target_dir = None, vocab_size = 50000):
+    text9 = _load_text9(target_dir=target_dir)
+    return DataSet(text9, vocab_size)
+
+class DataSet(object):
+    def __init__(self, list_of_words, vocab_size=20000):
+        count = [['UNK', -1]]
+        count.extend(collections.Counter(list_of_words).most_common(vocab_size - 1))
+        dictionary = {}
+        for word, _ in count:
+            dictionary[word] = len(dictionary)
+        data = []
+        unk_count = 0
+        for word in list_of_words:
+            if word in dictionary:
+                index = dictionary[word]
+            else:
+                index = 0  # dictionary['UNK']
+                unk_count += 1
+            data.append(index)
+        count[0][1] = unk_count
+        reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
+
+        self._dataidx = 0
+        self._datalen = len(data)
+        self.vocab_size = vocab_size
+        self.data = data
+        self.count = count
+        self.word_to_idx = dictionary
+        self.idx_to_word = reverse_dictionary
+
+    def generate_batch(self, batch_size, skip_window=2):
+        samples_per_target = 2 * skip_window
+        assert batch_size % samples_per_target == 0
+
+        targets = np.ndarray(shape=(batch_size), dtype=np.int32)
+        contexts = np.ndarray(shape=(batch_size), dtype=np.int32)
+
+        buffer = collections.deque(maxlen=samples_per_target + 1)
+        cursor = self._dataidx
+
+        for _ in range(samples_per_target + 1):
+            buffer.append(self.data[cursor])
+            cursor = (cursor + 1) % self._datalen
+
+        # for each target word in this batch
+        for i in range(batch_size // samples_per_target):
+            start = i * samples_per_target
+
+            for j in range(samples_per_target):
+                if j >= skip_window:
+                    k = j+1
+                else:
+                    k = j
+                targets[start + j] = buffer[skip_window]
+                contexts[start + j] = buffer[k]
+            buffer.append(self.data[cursor])
+            cursor = (cursor + 1) % self._datalen
+
+        self._dataidx = (self._dataidx + (batch_size // samples_per_target)) % self._datalen
+
+        return targets, contexts

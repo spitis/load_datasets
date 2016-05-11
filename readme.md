@@ -3,10 +3,16 @@
 ### load_wiki
 
 Loads "cleaned" wikipedia data described at http://mattmahoney.net/dc/textdata
-as a list of words. "Cleaned" data uses only the 26 lowercase English
-characters.
+as a dataset object with the following properties/methods:
+- vocab_size
+- count: list of (word string, count) tuples
+- data: list of the data, encoded by vocab index
+- idx_to_word: dictionary of vocab index --> word string
+- word_to_idx: dictionary of word string --> vocab index
+- generate_batch(batch_size, context_window_size)
 
-Data comes in two flavors:
+"Cleaned" data uses only the 26 lowercase English
+characters. Data comes in two flavors:
 - text9: first 10^9 bytes of 2006 English Wikipedia dump (124 million words)
 - text8: first 10^8 bytes of the same dump (17 million words)
 
@@ -15,8 +21,8 @@ https://github.com/tensorflow/tensorflow/blob/r0.8/tensorflow/examples/tutorials
 
 ```python
 from load_datasets import load_wiki
-text8 = load_wiki.load_text8(target_dir="data")
-text9 = load_wiki.load_text9(target_dir="data")
+text8 = load_wiki.load_text8(target_dir="data", vocab_size = 20000)
+text9 = load_wiki.load_text9(target_dir="data", vocab_size = 50000)
 ```
 
 ### load_mnist
